@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>抽紅包遊戲（過年版）</title>
+  <style>
+    /* 全局樣式 */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+    body {
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 20px 0;
+      color: #da4453;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #da4453;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      margin: 10px auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .input-group {
+      margin: 10px 0;
+    }
+
+    label {
+      font-size: 1rem;
+      color: #333;
+      margin-right: 5px;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      width: 120px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      background: #da4453;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #c12d3a;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    #drawResult {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #da4453;
+      min-height: 2em;
+      font-weight: bold;
+    }
+
+    /* 容器：放紅包、紙鈔 */
+    .envelope-money-container {
+      width: 200px;
+      height: 220px;
+      position: relative;
+      margin-top: 30px;
+      overflow: hidden;
+    }
+
+    /* 紅包樣式 */
+    .red-envelope {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%) translateY(0);
+      width: 120px;
+      height: 160px;
+      background: #da4453;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.8s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    /* 紙鈔初始時隱藏，慢慢顯現 */
+    .green-money {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%) translateY(0);
+      width: 100px;
+      height: 60px;
+      background: #90ee90;
+      border: 2px solid #58a958;
+      border-radius: 4px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      transition: transform 0.8s ease, opacity 0.8s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #444;
+      font-size: 1rem;
+      z-index: 2;
+      opacity: 0; /* 初始隱藏 */
+    }
+
+    /* .open 狀態：紅包下移，紙鈔上移 & 顯現 */
+    .envelope-money-container.open .red-envelope {
+      transform: translateX(-50%) translateY(90px);
+    }
+    .envelope-money-container.open .green-money {
+      transform: translateX(-50%) translateY(-70px);
+      opacity: 1; /* 淡入 */
+    }
+
+    /* 飄落 Emoji */
+    .falling-emoji {
+      position: absolute;
+      top: -50px;
+      font-size: 30px;
+      animation: fall linear infinite;
+      opacity: 0;
+    }
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(120vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>抽紅包遊戲</h1>
+  <div class="subtitle">恭喜發財，萬事如意！</div>
+
+  <!-- 上限金額設定 -->
+  <div class="card">
+    <div class="input-group">
+      <label for="upperLimitInput">上限金額：</label>
+      <input type="number" id="upperLimitInput" placeholder="請輸入整數..." />
+    </div>
+    <div class="buttons">
+      <button id="setLimitBtn">設定上限</button>
+      <button id="drawBtn" disabled>抽紅包</button>
+    </div>
+    <p id="drawResult"></p>
+  </div>
+
+  <!-- 紅包與紙鈔容器 -->
+  <div class="envelope-money-container" id="envelopeMoneyContainer">
+    <div class="red-envelope" id="redEnvelope">紅包</div>
+    <div class="green-money" id="greenMoney"></div>
+  </div>
+
+  <script>
+    let upperLimit = 0;
+    let isValidLimit = false;
+
+    // 動態產生飄落 Emoji
+    const NUM_EMOJIS = 30;
+    for (let i = 0; i < NUM_EMOJIS; i++) {
+      const emoji = document.createElement('div');
+      emoji.classList.add('falling-emoji');
+      emoji.textContent = '🧧';
+      emoji.style.left = Math.random() * 100 + '%';
+      emoji.style.animationDuration = (5 + Math.random() * 5) + 's';
+      emoji.style.animationDelay = Math.random() * 5 + 's';
+      document.body.appendChild(emoji);
+    }
+
+    // 設定上限
+    document.getElementById('setLimitBtn').addEventListener('click', function() {
+      const inputValue = document.getElementById('upperLimitInput').value;
+      const parsedValue = parseInt(inputValue, 10);
+
+      if (!isNaN(parsedValue) && parsedValue >= 1) {
+        upperLimit = parsedValue;
+        isValidLimit = true;
+        document.getElementById('drawResult').textContent = "已設定上限為 " + upperLimit;
+        document.getElementById('drawBtn').disabled = false;
+      } else {
+        isValidLimit = false;
+        document.getElementById('drawResult').textContent = "請輸入 1 或以上的正整數！";
+        document.getElementById('drawBtn').disabled = true;
+      }
+    });
+
+    // 抽紅包
+    document.getElementById('drawBtn').addEventListener('click', function() {
+      if (isValidLimit && upperLimit > 0) {
+        // 每次抽之前先重置狀態
+        const container = document.getElementById('envelopeMoneyContainer');
+        container.classList.remove('open');
+        
+        // 抽取隨機金額
+        const drawAmount = Math.floor(Math.random() * upperLimit) + 1;
+        document.getElementById('drawResult').textContent = `恭喜你抽到 ${drawAmount} 元！`;
+
+        // 在紙鈔上顯示金額
+        document.getElementById('greenMoney').textContent = `${drawAmount} 元`;
+
+        // 重新計算佈局後，再加上 open
+        setTimeout(() => {
+          container.classList.add('open');
+        }, 100);
+      }
+    });
+  </script>
+</body>
+</html>
