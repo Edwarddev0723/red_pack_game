@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>抽紅包遊戲（過年版）</title>
+  <title>抽紅包遊戲（RWD 版）</title>
   <style>
     /* 全局樣式 */
     * {
@@ -72,6 +72,7 @@
       justify-content: center;
       gap: 10px;
       margin-top: 20px;
+      flex-wrap: wrap; /* 讓按鈕在小螢幕可換行 */
     }
 
     button {
@@ -83,6 +84,7 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s ease;
+      margin-top: 10px; /* 讓按鈕在小螢幕換行時有間距 */
     }
 
     button:hover {
@@ -102,7 +104,6 @@
       font-weight: bold;
     }
 
-    /* 容器：放紅包、紙鈔 */
     .envelope-money-container {
       width: 200px;
       height: 220px;
@@ -111,7 +112,6 @@
       overflow: hidden;
     }
 
-    /* 紅包樣式 */
     .red-envelope {
       position: absolute;
       left: 50%;
@@ -131,7 +131,6 @@
       font-size: 1.1rem;
     }
 
-    /* 紙鈔初始時隱藏，慢慢顯現 */
     .green-money {
       position: absolute;
       left: 50%;
@@ -151,19 +150,17 @@
       color: #444;
       font-size: 1rem;
       z-index: 2;
-      opacity: 0; /* 初始隱藏 */
+      opacity: 0;
     }
 
-    /* .open 狀態：紅包下移，紙鈔上移 & 顯現 */
     .envelope-money-container.open .red-envelope {
       transform: translateX(-50%) translateY(90px);
     }
     .envelope-money-container.open .green-money {
       transform: translateX(-50%) translateY(-70px);
-      opacity: 1; /* 淡入 */
+      opacity: 1;
     }
 
-    /* 飄落 Emoji */
     .falling-emoji {
       position: absolute;
       top: -50px;
@@ -181,10 +178,48 @@
         opacity: 0;
       }
     }
+
+    /* === RWD: 手機或較小螢幕時的調整 (max-width: 600px) === */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.6rem;
+      }
+      .subtitle {
+        font-size: 1.2rem;
+      }
+      .card {
+        padding: 15px;
+      }
+      .buttons {
+        flex-direction: column; /* 按鈕在窄螢幕上下排列 */
+      }
+      button {
+        width: 100%;
+      }
+      .red-envelope {
+        width: 100px;  /* 紅包縮小 */
+        height: 140px;
+      }
+      .green-money {
+        width: 80px;   /* 紙鈔縮小 */
+        height: 50px;
+        font-size: 0.9rem;
+      }
+      .envelope-money-container {
+        width: 150px;
+        height: 180px;
+      }
+      .envelope-money-container.open .red-envelope {
+        transform: translateX(-50%) translateY(70px);
+      }
+      .envelope-money-container.open .green-money {
+        transform: translateX(-50%) translateY(-50px);
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>抽紅包遊戲</h1>
+  <h1>抽紅包遊戲（RWD 版）</h1>
   <div class="subtitle">恭喜發財，萬事如意！</div>
 
   <!-- 上限金額設定 -->
@@ -242,18 +277,18 @@
     // 抽紅包
     document.getElementById('drawBtn').addEventListener('click', function() {
       if (isValidLimit && upperLimit > 0) {
-        // 每次抽之前先重置狀態
+        // 每次抽之前重置狀態
         const container = document.getElementById('envelopeMoneyContainer');
         container.classList.remove('open');
-        
+
         // 抽取隨機金額
         const drawAmount = Math.floor(Math.random() * upperLimit) + 1;
         document.getElementById('drawResult').textContent = `恭喜你抽到 ${drawAmount} 元！`;
 
-        // 在紙鈔上顯示金額
+        // 紙鈔上顯示金額
         document.getElementById('greenMoney').textContent = `${drawAmount} 元`;
 
-        // 重新計算佈局後，再加上 open
+        // 觸發動畫
         setTimeout(() => {
           container.classList.add('open');
         }, 100);
