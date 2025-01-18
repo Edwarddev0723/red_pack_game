@@ -30,7 +30,7 @@
 
     .subtitle {
       color: #da4453;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       margin-bottom: 20px;
       text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
     }
@@ -72,7 +72,7 @@
       justify-content: center;
       gap: 10px;
       margin-top: 20px;
-      flex-wrap: wrap; /* 讓按鈕在小螢幕可換行 */
+      flex-wrap: wrap;
     }
 
     button {
@@ -84,7 +84,6 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s ease;
-      margin-top: 10px; /* 讓按鈕在小螢幕換行時有間距 */
     }
 
     button:hover {
@@ -104,14 +103,17 @@
       font-weight: bold;
     }
 
+    /* 容器：放紅包、紙鈔 */
     .envelope-money-container {
       width: 200px;
       height: 220px;
       position: relative;
       margin-top: 30px;
       overflow: hidden;
+      transition: all 0.5s ease;
     }
 
+    /* 紅包 */
     .red-envelope {
       position: absolute;
       left: 50%;
@@ -131,6 +133,7 @@
       font-size: 1.1rem;
     }
 
+    /* 紙鈔 */
     .green-money {
       position: absolute;
       left: 50%;
@@ -153,6 +156,7 @@
       opacity: 0;
     }
 
+    /* .open 狀態 */
     .envelope-money-container.open .red-envelope {
       transform: translateX(-50%) translateY(90px);
     }
@@ -161,6 +165,7 @@
       opacity: 1;
     }
 
+    /* 飄落 Emoji */
     .falling-emoji {
       position: absolute;
       top: -50px;
@@ -179,35 +184,43 @@
       }
     }
 
-    /* === RWD: 手機或較小螢幕時的調整 (max-width: 600px) === */
+    /* ================== RWD 手機樣式 (max-width: 600px) ================== */
     @media (max-width: 600px) {
+      body {
+        background: #fff0f0; /* 改變背景色方便區分 */
+      }
       h1 {
-        font-size: 1.6rem;
+        font-size: 2.2rem;
+        margin: 10px 0;
       }
       .subtitle {
-        font-size: 1.2rem;
+        font-size: 1.6rem;
       }
       .card {
+        max-width: 90%;
         padding: 15px;
       }
       .buttons {
-        flex-direction: column; /* 按鈕在窄螢幕上下排列 */
+        flex-direction: column;
       }
-      button {
+      .buttons button {
         width: 100%;
-      }
-      .red-envelope {
-        width: 100px;  /* 紅包縮小 */
-        height: 140px;
-      }
-      .green-money {
-        width: 80px;   /* 紙鈔縮小 */
-        height: 50px;
-        font-size: 0.9rem;
+        margin: 5px 0;
       }
       .envelope-money-container {
         width: 150px;
         height: 180px;
+        margin-top: 20px;
+      }
+      .red-envelope {
+        width: 90px;
+        height: 120px;
+        font-size: 1rem;
+      }
+      .green-money {
+        width: 70px;
+        height: 40px;
+        font-size: 0.8rem;
       }
       .envelope-money-container.open .red-envelope {
         transform: translateX(-50%) translateY(70px);
@@ -245,7 +258,7 @@
     let upperLimit = 0;
     let isValidLimit = false;
 
-    // 動態產生飄落 Emoji
+    // 產生飄落 Emoji
     const NUM_EMOJIS = 30;
     for (let i = 0; i < NUM_EMOJIS; i++) {
       const emoji = document.createElement('div');
@@ -277,18 +290,13 @@
     // 抽紅包
     document.getElementById('drawBtn').addEventListener('click', function() {
       if (isValidLimit && upperLimit > 0) {
-        // 每次抽之前重置狀態
         const container = document.getElementById('envelopeMoneyContainer');
         container.classList.remove('open');
 
-        // 抽取隨機金額
         const drawAmount = Math.floor(Math.random() * upperLimit) + 1;
         document.getElementById('drawResult').textContent = `恭喜你抽到 ${drawAmount} 元！`;
-
-        // 紙鈔上顯示金額
         document.getElementById('greenMoney').textContent = `${drawAmount} 元`;
 
-        // 觸發動畫
         setTimeout(() => {
           container.classList.add('open');
         }, 100);
